@@ -18,15 +18,15 @@ def write_file(data, path):
     with open(path, 'wb') as file:
         file.write(data)
 
-def registerUser(idConductor, photo):
+def registerUser(idConductor, carga_rostro):
     id = 0
     inserted = 0
 
     try:
         con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
         cursor = con.cursor()
-        sql = "INSERT INTO `conductor`(idConductor, photo) VALUES (%s,%s)"
-        pic = convertToBinaryData(photo)
+        sql = "INSERT INTO `conductor`(idConductor, carga_rostro) VALUES (%s,%s)"
+        pic = convertToBinaryData(carga_rostro)
         
 
         if pic:
@@ -49,23 +49,49 @@ def getUser(idUser, path):
     try:
         con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
         cursor = con.cursor()
+        sql = "SELECT * FROM `conductor` WHERE idUser = %s"
 
-        sql = "SELECT * FROM `conductor` WHERE idUser = " + str(idUser) 
-
-        cursor.execute(sql)
+        cursor.execute(sql, (idUser,))
         records = cursor.fetchall()
 
         for row in records:
             id = row[0]
-            write_file(row[5], path)
+            write_file(row[6], path)
+            
         rows = len(records)
-    except db.Error as e:
-        print(f"Failed to read image: {e}")
+    except:
+        print(f"Failed to read image:")
     finally:
         if con.is_connected():
             cursor.close()
             con.close()
     return {"id": id, "affected": rows}
+
+# def getUser(path):
+    
+#     rows = 0
+
+#     try:
+#         con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
+#         cursor = con.cursor()
+
+#         sql= "SELECT idUser, idConductor, photo FROM `conductor` WHERE 1" 
+
+#         cursor.execute(sql)
+#         records = cursor.fetchall()
+
+#         for row in records:
+            
+#             write_file(row[2], path)
+#         rows = len(records)
+#         #print(rows)
+#     except db.Error as e:
+#         print(f"Failed to read image: {e}")
+#     finally:
+#         if con.is_connected():
+#             cursor.close()
+#             con.close()
+#     return { "affected": rows}
 
 def getRows():
     con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
@@ -78,13 +104,25 @@ def getRows():
     con.close()
     return fixture_count
 
-def getName(idUser):
-    con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
+# def getName(idUser):
+#     con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
 
+#     cursor = con.cursor()   
+#     cursor.execute("SELECT idConductor FROM `conductor` WHERE idUser = " + str(idUser))
+#     name, = cursor.fetchone()
+#     con.commit()  
+#     cursor.close()
+#     con.close()
+#     return name
+
+
+def getAll():
+    con = db.connect(host=keys["host"], user=keys["user"], password=keys["password"], database=keys["database"])
     cursor = con.cursor()   
-    cursor.execute("SELECT idConductor FROM `conductor` WHERE idUser = " + str(idUser))
-    name, = cursor.fetchone()
+    sql="SELECT * FROM `conductor` WHERE 1"
+    cursor.execute(sql)
+    allid = cursor.fetchall()
     con.commit()  
     cursor.close()
     con.close()
-    return name
+    return allid
